@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    h1, h2 { color: #205781; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #ccc; padding: 6px; text-align: left; }
+    th { background-color: #205781; color: white; }
+    body { font-family: Arial, sans-serif; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <h1>Empresa Constructora XYZ</h1>
+  <h2>Cotización: {{ cotizacion.nombre }}</h2>
+
+  <p><strong>Proyecto:</strong> {{ cotizacion.proyecto.nombre }}</p>
+  <p><strong>Categoría:</strong> {{ cotizacion.categoria.nombre }}</p>
+  <p><strong>Usuario:</strong> {{ cotizacion.usuario.username }}</p>
+  <p><strong>Fecha:</strong> {{ cotizacion.fecha|date:"d/m/Y" }}</p>
+  <p><strong>Total General:</strong> {{ cotizacion.total_general }} Bs</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Producto</th>
+        <th>Cantidad</th>
+        <th>Precio Unitario</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in productos %}
+        <tr>
+          <td>{{ p.producto.nombre }}</td>
+          <td>{{ p.cantidad }}</td>
+          <td>{{ p.precio_unitario }} Bs</td>
+          <td>{{ p.total }} Bs</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>
