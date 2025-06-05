@@ -1,9 +1,11 @@
 # constructora/urls.py
-from django.contrib import admin
-from django.conf.urls.static import static
-from django.conf import settings
-from django.urls import path, include
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from django.contrib import admin # type: ignore
+from django.conf.urls.static import static # type: ignore
+from django.conf import settings # type: ignore
+from django.urls import path, include # type: ignore
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView # type: ignore
+
+from django.http import JsonResponse # type: ignore
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -14,11 +16,10 @@ urlpatterns = [
 
     path("api/dashboard/", include("dashboard.urls")),
 
-    #path('api/predicciones/', include('predicciones.urls')),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
-
+    path('', lambda request: JsonResponse({"message": "Backend Pandora "}))
 ]
 
 

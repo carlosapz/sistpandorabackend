@@ -1,14 +1,56 @@
 from django.urls import path
-from .views import (
-    DocumentoListCreateView, DocumentoListView, DocumentoDetailView,
-    DocumentoAprobarView, exportar_documentos_csv, exportar_documentos_pdf,
-    exportar_documentos_excel, exportar_documentos_pdf_filtrado,  # ✅ NUEVA IMPORTACIÓN
-    ProyectoListCreateView, ProyectoDetailView,
-    CategoriaListCreateView, TagListCreateView,
-    VersionDocumentoListCreateView, VersionDocumentoDetailView, RestaurarVersionAPIView, ComentarioListCreateView,
-    ComentarioDetailView, NotificacionListView, HistorialActividadListView,
-    exportar_historial_csv, exportar_historial_pdf, ObraListCreateView, ObraDetailView,
-    MarcarNotificacionLeidaView, categorias_por_proyecto, asociar_categoria_a_proyecto
+
+from documentos.views.proyecto_views import (
+    ProyectoListCreateView,
+    ProyectoDetailView,
+    CategoriaListCreateView,
+    TagListCreateView,
+)
+
+from documentos.views.documento_views import (
+    DocumentoListCreateView,
+    DocumentoListView,
+    DocumentoDetailView,
+    DocumentoAprobarView,
+)
+
+from documentos.views.version_views import (
+    VersionDocumentoListCreateView,
+    VersionDocumentoDetailView,
+    RestaurarVersionAPIView,
+)
+
+from documentos.views.comentario_views import (
+    ComentarioListCreateView,
+    ComentarioDetailView,
+)
+
+from documentos.views.notificacion_views import (
+    NotificacionListView,
+    MarcarNotificacionLeidaView,
+)
+
+from documentos.views.historial_views import (
+    HistorialActividadListView,
+)
+
+from documentos.views.export_views import (
+    exportar_documentos_csv,
+    exportar_documentos_pdf,
+    exportar_documentos_excel,
+    exportar_documentos_pdf_filtrado,
+    exportar_historial_csv,
+    exportar_historial_pdf,
+)
+
+from documentos.views.obra_views import (
+    ObraListCreateView,
+    ObraDetailView,
+)
+
+from documentos.views.relaciones_views import (
+    categorias_por_proyecto,
+    asociar_categoria_a_proyecto,
 )
 
 app_name = 'documentos'
@@ -31,22 +73,6 @@ urlpatterns = [
     path('filtrar/', DocumentoListView.as_view(), name='documento-list-filtrar'),
     path('<int:pk>/', DocumentoDetailView.as_view(), name='documento-detail'),
     path('<int:pk>/aprobar/', DocumentoAprobarView.as_view(), name='documento-aprobar'),
-    path('versiones/', VersionDocumentoListCreateView.as_view(), name='version-documento-list-create'),
-
-    # Exportar documentos
-    path('exportar/csv/', exportar_documentos_csv, name='exportar-documentos-csv'),
-    path('exportar/pdf/', exportar_documentos_pdf, name='exportar-documentos-pdf'),
-    path('exportar/excel/', exportar_documentos_excel, name='exportar-documentos-excel'),
-    path('exportar/pdf-filtrado/', exportar_documentos_pdf_filtrado, name='exportar-documentos-pdf-filtrado'),
-
-    # Historial actividades
-    path('historial/', HistorialActividadListView.as_view(), name='historial-actividad-list'),
-    path('historial/exportar/csv/', exportar_historial_csv, name='exportar-historial-csv'),
-    path('historial/exportar/pdf/', exportar_historial_pdf, name='exportar-historial-pdf'),
-
-    # Obras
-    path('obras/', ObraListCreateView.as_view(), name='obra-list-create'),
-    path('obras/<int:pk>/', ObraDetailView.as_view(), name='obra-detail'),
 
     # Versiones documentos
     path('versiones/', VersionDocumentoListCreateView.as_view(), name='version-documento-list-create'),
@@ -60,4 +86,19 @@ urlpatterns = [
     # Notificaciones
     path('notificaciones/', NotificacionListView.as_view(), name='notificacion-list'),
     path('notificaciones/<int:pk>/leer/', MarcarNotificacionLeidaView.as_view(), name='marcar-notificacion-leida'),
+
+    # Historial actividades
+    path('historial/', HistorialActividadListView.as_view(), name='historial-actividad-list'),
+    path('historial/exportar/csv/', exportar_historial_csv, name='exportar-historial-csv'),
+    path('historial/exportar/pdf/', exportar_historial_pdf, name='exportar-historial-pdf'),
+
+    # Exportar documentos
+    path('exportar/csv/', exportar_documentos_csv, name='exportar-documentos-csv'),
+    path('exportar/pdf/', exportar_documentos_pdf, name='exportar-documentos-pdf'),
+    path('exportar/excel/', exportar_documentos_excel, name='exportar-documentos-excel'),
+    path('exportar/pdf-filtrado/', exportar_documentos_pdf_filtrado, name='exportar-documentos-pdf-filtrado'),
+
+    # Obras
+    path('obras/', ObraListCreateView.as_view(), name='obra-list-create'),
+    path('obras/<int:pk>/', ObraDetailView.as_view(), name='obra-detail'),
 ]

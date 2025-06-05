@@ -1,0 +1,82 @@
+services:
+  db:
+    image: postgres:15
+    container_name: pandora_db
+    restart: always
+    environment:
+      POSTGRES_DB: constructora_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Creeper123
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: pandora_redis
+    ports:
+      - "6379:6379"
+    restart: always
+
+  web:
+    build:
+      context: .
+      dockerfile: constructora/Dockerfile
+    container_name: pandora_backend
+    command: >
+      sh -c "
+        python manage.py migrate &&
+        python manage.py collectstatic --noinput &&
+        gunicorn constructora.wsgi:application --bind 0.0.0.0:8000
+      "
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+
+  celery:
+    build:
+      context: .
+      dockerfile: constructora/Dockerfile
+    container_name: pandora_celery_worker
+    command: celery -A constructora worker -l info --concurrency=4 -Q default,pdf,ml,low_priority
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+
+
+  flower:
+    build:
+      context: .
+      dockerfile: constructora/Dockerfile
+    container_name: pandora_flower
+    command: celery -A constructora flower --port=5555
+    ports:
+      - "5555:5555"
+    env_file:
+      - .env
+    depends_on:
+      - redis
+
+  nginx:
+    image: nginx:latest
+    container_name: pandora_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./staticfiles:/app/static
+      - ./media:/app/media
+    depends_on:
+      - web
+
+volumes:
+  postgres_data:

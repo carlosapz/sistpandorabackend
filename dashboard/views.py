@@ -7,11 +7,13 @@ from random import choice
 from datetime import date, timedelta
 from django.utils import timezone
 
-from documentos.models import Proyecto, Documento
-from prediccion.models import Cotizacion, Producto
-from prediccion.serializers import CotizacionSerializer
-from usuarios.models import HistorialActividad
-from prediccion.utils import obtener_precio_dolar, obtener_dolar_paralelo
+from documentos.models.proyecto import Proyecto
+from documentos.models.documento import Documento
+from prediccion.models.cotizacion import Cotizacion
+from prediccion.models.producto import Producto
+from prediccion.serializers.cotizacion_serializer import CotizacionSerializer
+from usuarios.models.historial_actividad import HistorialActividad
+from prediccion.utils.currency_utils import obtener_precio_dolar, obtener_dolar_paralelo
 
 import pandas as pd
 

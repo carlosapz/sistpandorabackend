@@ -1,1 +1,3 @@
-default_app_config = 'documentos.apps.DocumentosConfig'
+# documentos/__init__.py
+
+"""Documentos app."""

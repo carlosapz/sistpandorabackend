@@ -1,0 +1,8 @@
+# Testing
+pytest==8.3.5
+pytest-django==4.11.1
+
+# Otros útiles para desarrollo local
+Pillow==11.0.0
+black==24.3.0
+isort==5.13.2

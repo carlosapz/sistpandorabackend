@@ -1,37 +1,53 @@
-from rest_framework import permissions
-from rest_framework.exceptions import PermissionDenied
+import logging
+from rest_framework.permissions import BasePermission # type: ignore
+from rest_framework.exceptions import PermissionDenied # type: ignore
 
-class PuedeVerDocumentos(permissions.BasePermission):
+logger = logging.getLogger(__name__)
+
+class PuedeVerDocumentos(BasePermission):
+    """
+    Permiso para permitir a un usuario ver documentos.
+    """
+
     def has_permission(self, request, view):
-        # Verifica si el usuario está autenticado y tiene el permiso adecuado
-        return request.user.is_authenticated and getattr(request.user, 'rol', None) and request.user.rol.puede_ver_documentos
+        if request.user and request.user.is_authenticated:
+            # Puedes agregar lógica extra aquí si necesitas
+            return True
+        logger.warning(f"Acceso denegado para ver documentos - Usuario: {request.user}")
+        return False
 
-class PuedeEditarDocumentos(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
-        if not request.user.is_authenticated:
-            return False
-        if not getattr(request.user, 'rol', None):
-            raise PermissionDenied("Tu usuario no tiene un rol asignado.")
-        if not request.user.rol.puede_editar_documentos:
-            raise PermissionDenied("No tienes permiso para editar documentos.")
-        return True
 
-class PuedeEliminarDocumentos(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
-        # Verifica si el usuario tiene el permiso para eliminar documentos
-        return (
-            request.user.is_authenticated 
-            and getattr(request.user, 'rol', None)
-            and request.user.rol.puede_eliminar_documentos
-            and request.user.is_staff  # Solo administradores pueden eliminar
-        )
+class PuedeEditarDocumentos(BasePermission):
+    """
+    Permiso para permitir a un usuario editar documentos.
+    """
 
-class PuedeAprobarDocumentos(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
-        # Verifica si el usuario tiene el permiso para aprobar documentos
-        return (
-            request.user.is_authenticated 
-            and getattr(request.user, 'rol', None)
-            and request.user.rol.puede_aprobar_documentos
-            and request.user.is_superuser  # Solo superusuarios pueden aprobar documentos
-        )
+    def has_permission(self, request, view):
+        if request.user and request.user.is_authenticated and request.user.has_perm('documentos.change_documento'):
+            return True
+        logger.warning(f"Acceso denegado para editar documentos - Usuario: {request.user}")
+        raise PermissionDenied("No tiene permiso para editar documentos.")
+
+
+class PuedeEliminarDocumentos(BasePermission):
+    """
+    Permiso para permitir a un usuario eliminar documentos.
+    """
+
+    def has_permission(self, request, view):
+        if request.user and request.user.is_authenticated and request.user.has_perm('documentos.delete_documento'):
+            return True
+        logger.warning(f"Acceso denegado para eliminar documentos - Usuario: {request.user}")
+        raise PermissionDenied("No tiene permiso para eliminar documentos.")
+
+
+class PuedeAprobarDocumentos(BasePermission):
+    """
+    Permiso para permitir a un usuario aprobar documentos.
+    """
+
+    def has_permission(self, request, view):
+        if request.user and request.user.is_authenticated and request.user.has_perm('documentos.approve_documento'):
+            return True
+        logger.warning(f"Acceso denegado para aprobar documentos - Usuario: {request.user}")
+        raise PermissionDenied("No tiene permiso para aprobar documentos.")

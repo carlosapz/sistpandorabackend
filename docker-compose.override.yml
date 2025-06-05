@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  web:
+    ports:
+      - "8000:8000"
+    environment:
+      - DJANGO_SETTINGS_MODULE=constructora.settings
+
+  db:
+    ports:
+      - "5432:5432"
+
+  redis:
+    ports:
+      - "6379:6379"

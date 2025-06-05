@@ -1,16 +1,22 @@
-from django.apps import AppConfig
 import logging
+from django.apps import AppConfig
 
-# Configuración de la aplicación de Documentos
+logger = logging.getLogger(__name__)
+
 class DocumentosConfig(AppConfig):
+    """
+    Configuración de la aplicación Documentos.
+    Registra señales al iniciar la app para manejar eventos de modelos.
+    """
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'documentos'
 
     def ready(self):
-        # Intentamos importar las señales y configuramos el logger
+        """
+        Método que se ejecuta al arrancar la aplicación.
+        Importa el módulo de señales para registrar handlers.
+        """
         try:
-            import documentos.signals  # Asegura que las señales se registren al iniciar la app
+            import documentos.signals
         except ImportError as e:
-            # Log de error detallado para facilitar la depuración
-            logger = logging.getLogger(__name__)
-            logger.error(f"Error al intentar importar el módulo de señales en 'documentos': {e}")
+            logger.error(f"Error al importar señales en DocumentosConfig: {e}")
