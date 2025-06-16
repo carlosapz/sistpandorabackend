@@ -2,7 +2,7 @@ from django.db import models
 
 class Obra(models.Model):
     """
-    Modelo que representa una obra en ejecución o finalizada.
+    Modelo que representa una obra de construcción.
     """
     nombre = models.CharField(max_length=255)
     descripcion = models.TextField()
@@ -11,6 +11,7 @@ class Obra(models.Model):
     progreso = models.FloatField(default=0.0)
     presupuesto_estimado = models.DecimalField(max_digits=12, decimal_places=2, default=0.0)
     presupuesto_real = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+
     estado = models.CharField(
         max_length=20,
         choices=[
@@ -26,9 +27,11 @@ class Obra(models.Model):
         return f"{self.nombre} - {self.estado}"
 
     def calcular_desviacion_presupuesto(self):
-        """
-        Calcula la diferencia entre el presupuesto real y estimado.
-        """
-        if self.presupuesto_real:
-            return self.presupuesto_real - self.presupuesto_estimado
+        if self.presupuesto_real is not None:
+            return float(self.presupuesto_real - self.presupuesto_estimado)
+        return None
+
+    def calcular_duracion_dias(self):
+        if self.fecha_inicio and self.fecha_fin:
+            return (self.fecha_fin - self.fecha_inicio).days
         return None

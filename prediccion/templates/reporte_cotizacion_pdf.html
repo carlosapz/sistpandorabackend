@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Reporte Cotización: {{ cotizacion.nombre }}</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      margin: 20px;
+      color: #333;
+    }
+    h1, h2, h3 {
+      color: #205781;
+      margin-bottom: 4px;
+    }
+    p {
+      margin: 2px 0;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .header h1 {
+      font-size: 22px;
+      font-weight: bold;
+      color: #205781;
+    }
+    .header img {
+      max-width: 120px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      margin-bottom: 18px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 6px;
+      text-align: left;
+    }
+    th {
+      background: #205781;
+      color: white;
+      font-size: 13px;
+    }
+    tr:nth-child(even) {
+      background: #f8f9fb;
+    }
+    .section {
+      margin-top: 24px;
+    }
+    .totales td {
+      font-weight: bold;
+    }
+    footer {
+      font-size: 10px;
+      text-align: center;
+      margin-top: 40px;
+      color: #666;
+    }
+    .total-row {
+      background-color: #f0f6fa;
+      font-weight: bold;
+    }
+    @page {
+      size: A4;
+      margin: 2cm;
+    }
+  </style>
+</head>
+<body>
+  <!-- HEADER -->
+  <div class="header">
+    <h1>Constructora Pandora</h1>
+    <img src="YOUR_LOGO_URL_HERE" alt="Logo" />
+  </div>
+
+  <h2>Reporte completo de cotización</h2>
+
+  <div class="section">
+    <h3>1. Información general</h3>
+    <p><strong>Nombre:</strong> {{ cotizacion.nombre }}</p>
+    <p><strong>Proyecto:</strong> {{ cotizacion.proyecto.nombre }}</p>
+    <p><strong>Categoría:</strong> {{ cotizacion.categoria.nombre }}</p>
+    <p><strong>Usuario:</strong> {{ cotizacion.usuario.username }}</p>
+    <p><strong>Fecha de creación:</strong> {{ cotizacion.fecha|date:"d/m/Y" }}</p>
+    <p><strong>Válida hasta:</strong> {{ cotizacion.fecha_validez|date:"d/m/Y" }}</p>
+    <p><strong>Tipo de cambio usado:</strong> {{ cotizacion.tipo_cambio_valor }} Bs ({{ cotizacion.tipo_cambio_origen }})</p>
+  </div>
+
+  <div class="section">
+    <h3>2. Productos cotizados</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Cantidad</th>
+          <th>Precio Unitario (Bs)</th>
+          <th>Total (Bs)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in productos %}
+          <tr>
+            <td>{{ p.producto.nombre }}</td>
+            <td>{{ p.cantidad }}</td>
+            <td>{{ p.precio_unitario|floatformat:2 }}</td>
+            <td>{{ p.total|floatformat:2 }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="4">Sin productos cotizados.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if cotizacion.items_adicionales.exists %}
+  <div class="section">
+    <h3>3. Ítems adicionales</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Descripción</th>
+          <th>Unidad</th>
+          <th>Cantidad</th>
+          <th>Precio Unitario (Bs)</th>
+          <th>Total (Bs)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for i in cotizacion.items_adicionales.all %}
+          <tr>
+            <td>{{ i.descripcion }}</td>
+            <td>{{ i.unidad }}</td>
+            <td>{{ i.cantidad }}</td>
+            <td>{{ i.precio_unitario|floatformat:2 }}</td>
+            <td>{{ i.total|floatformat:2 }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5">Sin ítems adicionales.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <div class="section">
+    <h3>4. Resumen económico</h3>
+    <table class="totales">
+      <tbody>
+        <tr><td>Gastos generales:</td><td>{{ cotizacion.gastos_generales }} %</td></tr>
+        <tr><td>Utilidad:</td><td>{{ cotizacion.utilidad }} %</td></tr>
+        <tr><td>Contingencia:</td><td>{{ cotizacion.contingencia }} %</td></tr>
+        <tr><td><strong>Total general:</strong></td><td><strong>{{ cotizacion.total_general|floatformat:2 }} Bs</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  {% if cotizacion.simulaciones_futuras.exists %}
+  <div class="section">
+    <h3>5. Simulaciones futuras</h3>
+    {% for futura in cotizacion.simulaciones_futuras.all %}
+      <p><strong>Fecha de simulación:</strong> {{ futura.fecha_generacion|date:"d/m/Y" }}</p>
+      <p><strong>Horizonte:</strong> {{ futura.horizonte_dias }} días</p>
+      <p><strong>Total estimado futuro:</strong> {{ futura.total_bs|floatformat:2 }} Bs</p>
+      <p><strong>Tipo de cambio usado:</strong> {{ futura.dolar_usado|floatformat:2 }} Bs ({{ futura.tipo_cambio_origen }})</p>
+      <hr />
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <footer>
+    Generado automáticamente - {{ now|date:"d/m/Y H:i" }}<br>
+    &copy; {{ now|date:"Y" }} Constructora Pandora | Todos los derechos reservados
+  </footer>
+</body>
+</html>

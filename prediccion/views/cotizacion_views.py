@@ -14,7 +14,8 @@ from prediccion.models.cotizacion import Cotizacion, ProductoCotizado
 from prediccion.serializers.cotizacion_serializer import CotizacionSerializer
 from prediccion.services.predictor import predecir_precio_actual
 from prediccion.utils.currency_utils import obtener_precio_dolar, obtener_dolar_paralelo
-from prediccion.services.pdf_service import generar_pdf_cotizacion  # 👈 nuevo import
+from prediccion.services.pdf_service import generar_pdf_cotizacion, generar_pdf_reporte
+from prediccion.models.item_adicional import ItemAdicional
 
 class CotizacionPagination(PageNumberPagination):
     page_size = 10
@@ -44,9 +45,16 @@ class CotizacionListView(generics.ListAPIView):
     pagination_class = CotizacionPagination
 
     def get_queryset(self):
-        return Cotizacion.objects.select_related('proyecto', 'categoria', 'usuario').filter(
+        queryset = Cotizacion.objects.select_related('proyecto', 'categoria', 'usuario').filter(
             usuario=self.request.user
         ).order_by('-fecha')
+    
+        vigentes = self.request.GET.get("vigentes")
+        if vigentes == "true":
+            queryset = queryset.filter(fecha_validez__gte=timezone.now())
+    
+        return queryset
+
 
 @method_decorator(cache_page(60 * 5), name='dispatch')
 class CotizacionDetailView(generics.RetrieveAPIView):
@@ -138,3 +146,87 @@ def descargar_cotizacion_pdf(request, pk):
         return HttpResponse("Cotización no encontrada", status=404)
     except Exception as e:
         return HttpResponse(f"Error al generar PDF: {str(e)}", status=500)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def descargar_reporte_pdf(request, pk):
+    try:
+        response = generar_pdf_reporte(request.user, pk)
+        return response
+    except Cotizacion.DoesNotExist:
+        return HttpResponse("Cotización no encontrada", status=404)
+    except Exception as e:
+        return HttpResponse(f"Error al generar reporte: {str(e)}", status=500)
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def clonar_cotizacion(request, pk):
+    try:
+        cotizacion = Cotizacion.objects.select_related('proyecto', 'categoria').prefetch_related(
+            'productos_cotizados', 'items_adicionales'
+        ).get(pk=pk)
+
+        nueva = Cotizacion.objects.create(
+            usuario=request.user,
+            nombre=f"{cotizacion.nombre} (copia)",
+            proyecto=cotizacion.proyecto,
+            categoria=cotizacion.categoria,
+            fecha_validez=timezone.now() + timedelta(days=7),
+            tipo_cambio_dolar=cotizacion.tipo_cambio_dolar,
+            tipo_cambio_origen=cotizacion.tipo_cambio_origen,
+            tipo_cambio_valor=cotizacion.tipo_cambio_valor,
+            gastos_generales=cotizacion.gastos_generales,
+            utilidad=cotizacion.utilidad,
+            contingencia=cotizacion.contingencia,
+            total_general=cotizacion.total_general,
+        )
+
+        for p in cotizacion.productos_cotizados.all():
+            ProductoCotizado.objects.create(
+                cotizacion=nueva,
+                producto=p.producto,
+                cantidad=p.cantidad,
+                precio_unitario=p.precio_unitario,
+                total=p.total,
+            )
+
+        for i in cotizacion.items_adicionales.all():
+            ItemAdicional.objects.create(
+                cotizacion=nueva,
+                descripcion=i.descripcion,
+                unidad=i.unidad,
+                cantidad=i.cantidad,
+                precio_unitario=i.precio_unitario,
+                total=i.total,
+            )
+
+        return Response({"mensaje": "Cotización clonada correctamente", "id": nueva.id}, status=201)
+
+    except Cotizacion.DoesNotExist:
+        return Response({"error": "Cotización no encontrada."}, status=404)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def cotizaciones_por_obra(request, obra_id):
+    """
+    Lista las cotizaciones asociadas a una obra específica.
+    """
+    cotizaciones = Cotizacion.objects.filter(obra_id=obra_id).select_related("proyecto", "categoria", "usuario")
+    serializer = CotizacionSerializer(cotizaciones, many=True, context={"request": request})
+    return Response({"results": serializer.data})
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def cotizaciones_por_categoria_y_proyecto(request, proyecto_id, categoria_id):
+    """
+    Lista las cotizaciones asociadas a un proyecto y categoría específicos.
+    """
+    cotizaciones = Cotizacion.objects.filter(
+        proyecto_id=proyecto_id,
+        categoria_id=categoria_id
+    ).select_related("proyecto", "categoria", "usuario")
+
+    serializer = CotizacionSerializer(cotizaciones, many=True, context={"request": request})
+    return Response({"results": serializer.data})

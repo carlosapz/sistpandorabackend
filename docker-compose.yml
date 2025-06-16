@@ -8,16 +8,9 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: Creeper123
     ports:
-      - "5433:5432"
+      - "5433:5432"  # Cambié el puerto expuesto de 5432 a 5433 para evitar conflicto si tienes una base local
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
-  redis:
-    image: redis:7.2-alpine
-    container_name: pandora_redis
-    ports:
-      - "6379:6379"
-    restart: always
 
   web:
     build:
@@ -35,48 +28,19 @@ services:
     env_file:
       - .env
     depends_on:
-      - db
-      - redis
-
-  celery:
-    build:
-      context: .
-      dockerfile: constructora/Dockerfile
-    container_name: pandora_celery_worker
-    command: celery -A constructora worker -l info --concurrency=4 -Q default,pdf,ml,low_priority
-    volumes:
-      - .:/app
-    env_file:
-      - .env
-    depends_on:
-      - db
-      - redis
-
-
-  flower:
-    build:
-      context: .
-      dockerfile: constructora/Dockerfile
-    container_name: pandora_flower
-    command: celery -A constructora flower --port=5555
-    ports:
-      - "5555:5555"
-    env_file:
-      - .env
-    depends_on:
-      - redis
+      - db  # Solo dependemos de la base de datos
 
   nginx:
     image: nginx:latest
     container_name: pandora_nginx
     ports:
-      - "80:80"
+      - "80:80"  # El contenedor de nginx manejará las solicitudes web en el puerto 80
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./staticfiles:/app/static
-      - ./media:/app/media
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro  # Configuración de nginx
+      - ./staticfiles:/app/static  # Directorios para archivos estáticos
+      - ./media:/app/media  # Directorios para archivos multimedia
     depends_on:
-      - web
+      - web  # nginx depende del servicio web para estar disponible
 
 volumes:
   postgres_data:

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Resumen de Obra - {{ obra.nombre }}</title>
+  <style>
+    body {
+      font-family: 'Helvetica', sans-serif;
+      margin: 40px;
+      font-size: 12px;
+      color: #333;
+    }
+
+    h1, h2, h3 {
+      color: #205781;
+    }
+
+    .seccion {
+      margin-bottom: 25px;
+    }
+
+    .etiqueta {
+      font-weight: bold;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      margin-bottom: 15px;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 6px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    .total {
+      font-weight: bold;
+      background-color: #eef;
+    }
+
+    .resumen-box {
+      border: 1px solid #ccc;
+      padding: 10px;
+      background-color: #f9f9f9;
+    }
+
+    .alerta {
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 4px;
+    }
+
+    .excedido {
+      background-color: #ffe6e6;
+      color: #b30000;
+    }
+
+    .cercano {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+
+    .saludable {
+      background-color: #e6ffe6;
+      color: #006600;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Constructora Pandora</h1>
+  <h2>Resumen de Obra</h2>
+
+  <div class="seccion">
+    <h3>1. Información de la Obra</h3>
+    <p><span class="etiqueta">Nombre:</span> {{ obra.nombre }}</p>
+    <p><span class="etiqueta">Descripción:</span> {{ obra.descripcion }}</p>
+    <p><span class="etiqueta">Fecha Inicio:</span> {{ obra.fecha_inicio }}</p>
+    <p><span class="etiqueta">Fecha Fin:</span> {{ obra.fecha_fin }}</p>
+    <p><span class="etiqueta">Estado:</span> {{ obra.estado|title }}</p>
+    <p><span class="etiqueta">Progreso:</span> {{ obra.progreso }}%</p>
+  </div>
+
+  <div class="seccion">
+    <h3>2. Cotizaciones Asociadas</h3>
+
+    {% for cot in cotizaciones %}
+      <div class="resumen-box">
+        <h4>{{ cot.nombre }}</h4>
+
+        <p><span class="etiqueta">Proyecto:</span> {{ cot.proyecto_nombre }}</p>
+        <p><span class="etiqueta">Categoría:</span> {{ cot.categoria_nombre }}</p>
+        <p><span class="etiqueta">Fecha de validez:</span> {{ cot.fecha_validez }}</p>
+        <p><span class="etiqueta">Tipo de cambio:</span> {{ cot.tipo_cambio_valor }} Bs ({{ cot.tipo_cambio_origen }})</p>
+
+        <h5>Productos Cotizados</h5>
+        <table>
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Cantidad</th>
+              <th>Precio Unitario</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in cot.productos_cotizados %}
+            <tr>
+              <td>{{ p.producto.nombre }}</td>
+              <td>{{ p.cantidad }}</td>
+              <td>{{ p.precio_unitario }}</td>
+              <td>{{ p.total }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        {% if cot.items_adicionales %}
+        <h5>Ítems Adicionales</h5>
+        <table>
+          <thead>
+            <tr>
+              <th>Descripción</th>
+              <th>Unidad</th>
+              <th>Cantidad</th>
+              <th>Precio Unitario</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for i in cot.items_adicionales %}
+            <tr>
+              <td>{{ i.descripcion }}</td>
+              <td>{{ i.unidad }}</td>
+              <td>{{ i.cantidad }}</td>
+              <td>{{ i.precio_unitario }}</td>
+              <td>{{ i.total }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% endif %}
+
+        <table>
+          <tr><td>Subtotal:</td><td>{{ cot.subtotal }}</td></tr>
+          <tr><td>Gastos Generales ({{ cot.gastos_generales }}%)</td><td>{{ cot.total_gastos }}</td></tr>
+          <tr><td>Utilidad ({{ cot.utilidad }}%)</td><td>{{ cot.total_utilidad }}</td></tr>
+          <tr><td>Contingencia ({{ cot.contingencia }}%)</td><td>{{ cot.total_contingencia }}</td></tr>
+          <tr class="total"><td>Total General:</td><td>{{ cot.total_general }}</td></tr>
+        </table>
+      </div>
+      <br>
+    {% endfor %}
+  </div>
+
+  <div class="seccion">
+    <h3>3. Resumen Financiero de Obra</h3>
+
+    <table>
+      <tr>
+        <td><strong>Total Cotizado:</strong></td>
+        <td>{{ total_cotizado }}</td>
+      </tr>
+      <tr>
+        <td><strong>Presupuesto Estimado:</strong></td>
+        <td>{{ presupuesto_estimado }}</td>
+      </tr>
+      <tr>
+        <td><strong>Presupuesto Restante:</strong></td>
+        <td>{{ presupuesto_restante }}</td>
+      </tr>
+    </table>
+
+    <div class="alerta 
+      {% if presupuesto_restante < 0 %}excedido
+      {% elif porcentaje_uso > 90 %}cercano
+      {% else %}saludable{% endif %}">
+      <strong>
+        {% if presupuesto_restante < 0 %}
+          ¡Presupuesto excedido!
+        {% elif porcentaje_uso > 90 %}
+          Atención: cerca del límite presupuestario
+        {% else %}
+          Presupuesto saludable
+        {% endif %}
+      </strong>
+    </div>
+  </div>
+
+</body>
+</html>

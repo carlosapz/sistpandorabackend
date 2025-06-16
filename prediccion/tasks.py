@@ -9,6 +9,19 @@ from prediccion.models.producto import Producto
 
 logger = logging.getLogger(__name__)
 
+from celery import shared_task
+from prediccion.services.tipo_cambio_service import guardar_tipo_cambio_historico
+
+@shared_task
+def task_guardar_tipo_cambio_diario():
+    """
+    Tarea automática para guardar el tipo de cambio del día.
+    """
+    result = guardar_tipo_cambio_historico()
+    return result
+
+
+
 @shared_task(
     bind=True,
     autoretry_for=(Exception,),

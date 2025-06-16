@@ -6,6 +6,9 @@ from .models.producto import Producto
 from .models.cotizacion import Cotizacion, ProductoCotizado
 from .models.prediccion_historica import PrediccionHistorica
 
+from .models.tipo_cambio import ModeloTipoCambioConfig
+
+
 @admin.register(Producto)
 class ProductoAdmin(admin.ModelAdmin):
     """Admin de productos."""
@@ -34,3 +37,10 @@ class PrediccionHistoricaAdmin(admin.ModelAdmin):
     list_filter = ('fecha_prediccion', 'tipo_cambio_origen')
     search_fields = ('producto__nombre', 'usuario__username')
     readonly_fields = ('fecha_prediccion',)
+
+
+@admin.register(ModeloTipoCambioConfig)
+class ModeloTipoCambioConfigAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'tipo_cambio_origen', 'activo', 'fecha_subida')
+    list_filter = ('tipo_cambio_origen', 'activo')
+    search_fields = ('nombre',)

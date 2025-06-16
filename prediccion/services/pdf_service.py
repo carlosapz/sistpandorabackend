@@ -3,6 +3,7 @@ from django.template.loader import render_to_string
 from django.conf import settings
 from weasyprint import HTML, CSS
 from io import BytesIO
+from django.utils import timezone
 from django.http import HttpResponse
 from prediccion.models.cotizacion import Cotizacion
 import logging
@@ -48,5 +49,31 @@ def generar_pdf_cotizacion(usuario, cotizacion_id):
     response['Content-Disposition'] = f'attachment; filename="cotizacion_{cotizacion.id}.pdf"'
 
     logger.info(f"✅ PDF generado con WeasyPrint para cotización {cotizacion.id}")
+
+    return response
+
+
+def generar_pdf_reporte(usuario, cotizacion_id):
+    from prediccion.models.cotizacion_futura import CotizacionFutura
+
+    cotizacion = Cotizacion.objects.select_related('usuario', 'proyecto', 'categoria').prefetch_related('productos_cotizados__producto', 'simulaciones_futuras').get(
+        pk=cotizacion_id, usuario=usuario
+    )
+
+    productos = cotizacion.productos_cotizados.all()
+
+    html_string = render_to_string("reporte_cotizacion_pdf.html", {
+        "cotizacion": cotizacion,
+        "productos": productos,
+        "now": timezone.now()
+    })
+
+    pdf_io = BytesIO()
+    html = HTML(string=html_string, base_url=settings.BASE_DIR)
+    html.write_pdf(target=pdf_io)
+
+    pdf_io.seek(0)
+    response = HttpResponse(pdf_io, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="reporte_{cotizacion.id}.pdf"'
 
     return response

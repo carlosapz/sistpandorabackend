@@ -1,16 +1,11 @@
-version: '3.8'
-
 services:
   web:
     ports:
-      - "8000:8000"
+      - "8000:8000"  # Esto expone el puerto del backend web en tu máquina local
     environment:
-      - DJANGO_SETTINGS_MODULE=constructora.settings
+      - DJANGO_SETTINGS_MODULE=constructora.settings  # Asegúrate de usar el módulo de configuración correcto
 
   db:
     ports:
-      - "5432:5432"
+      - "5432:5432"  # Mantenemos el puerto de PostgreSQL en el contenedor
 
-  redis:
-    ports:
-      - "6379:6379"

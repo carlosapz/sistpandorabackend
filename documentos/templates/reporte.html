@@ -4,40 +4,96 @@
   <meta charset="UTF-8" />
   <style>
     body {
-      font-family: "Helvetica", sans-serif;
-      margin: 30px;
+      font-family: "Helvetica", "Arial", sans-serif;
+      margin: 40px;
       font-size: 12px;
       color: #333;
     }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #4a148c;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+    }
+
+    .logo {
+      width: 120px;
+    }
+
+    .company-info {
+      text-align: right;
+      font-size: 11px;
+    }
+
     h1 {
       text-align: center;
-      font-weight: bold;
-      margin-bottom: 20px;
-      font-size: 18px;
       color: #4a148c;
+      margin-top: 0;
+      font-size: 20px;
     }
+
+    .meta {
+      margin-bottom: 20px;
+      font-size: 11px;
+    }
+
+    .meta span {
+      display: inline-block;
+      margin-right: 20px;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 20px;
+      margin-bottom: 30px;
     }
+
     th, td {
-      border: 1px solid #666;
-      padding: 6px 8px;
+      border: 1px solid #aaa;
+      padding: 8px 10px;
       text-align: center;
     }
+
     th {
-      background-color: #7b1fa2;
+      background-color: #4a148c;
       color: white;
-      font-weight: bold;
     }
+
     tr:nth-child(even) {
       background-color: #f3e5f5;
+    }
+
+    footer {
+      border-top: 1px solid #999;
+      font-size: 10px;
+      text-align: center;
+      padding-top: 10px;
+      margin-top: 30px;
+      color: #666;
     }
   </style>
 </head>
 <body>
-  <h1>Reporte de Documentos - Constructora Pandora</h1>
+
+  <header>
+    <img src="https://i.imgur.com/Aj6mBkF.png" alt="Logo Constructora Pandora" class="logo" />
+    <div class="company-info">
+      <strong>Constructora Pandora</strong><br />
+      Calle Ejemplo 123<br />
+      contacto@pandora.com<br />
+      +591 777-77777
+    </div>
+  </header>
+
+  <h1>Reporte de Documentos</h1>
+
+  <div class="meta">
+    <span><strong>Fecha del reporte:</strong> {{ fecha_actual|date:"d/m/Y H:i" }}</span>
+    <span><strong>Total de documentos:</strong> {{ documentos|length }}</span>
+  </div>
 
   <table>
     <thead>
@@ -65,5 +121,9 @@
       {% endfor %}
     </tbody>
   </table>
+
+  <footer>
+    Reporte generado automáticamente por el sistema - Constructora Pandora &copy; {{ fecha_actual|date:"Y" }}
+  </footer>
 </body>
 </html>

@@ -2,3 +2,6 @@ from .producto_serializer import ProductoSerializer
 from .producto_cotizado_serializer import ProductoCotizadoSerializer
 from .cotizacion_serializer import CotizacionSerializer
 from .prediccion_historica_serializer import PrediccionHistoricaSerializer
+from .prediccion_tipo_cambio_serializer import PrediccionTipoCambioSerializer
+from .cotizacion_futura_serializer import CotizacionFuturaSerializer
+from .item_adicional_serializer import ItemAdicionalSerializer

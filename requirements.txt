@@ -4,15 +4,8 @@ django-cors-headers==4.7.0
 django-filter==24.3
 djangorestframework==3.15.2
 djangorestframework-simplejwt==5.3.1
-django-celery-results==2.5.1
 python-decouple==3.8
 psycopg2-binary==2.9.10
-
-# Celery + Redis
-celery==5.4.0
-redis==5.2.0
-flower==2.0.1
-
 
 # Machine Learning / Predicción
 tensorflow==2.19.0  # Usas 2.19 en tu viejo req

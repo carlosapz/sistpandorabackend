@@ -1,3 +1,5 @@
+# prediccion_views.py
+
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -15,6 +17,7 @@ from prediccion.utils.currency_utils import obtener_precio_dolar, obtener_dolar_
 import traceback
 import pandas as pd
 
+# === VIEW para predicción de precio ===
 class PrecioPrediccionView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -69,34 +72,52 @@ class PrecioPrediccionView(APIView):
             traceback.print_exc()
             return Response({"error": str(e)}, status=400)
 
-@method_decorator(cache_page(60 * 5), name='dispatch') 
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def historico_predicciones_producto(request, producto_id):
-    """
-    Devuelve el historial de predicciones para un producto.
-    """
-    try:
-        predicciones = PrediccionHistorica.objects.select_related('producto', 'usuario').filter(
-            producto_id=producto_id
-        ).order_by("-fecha_prediccion")
+# === VIEW para historial de predicciones (CORREGIDA - CBV) ===
+# views/prediccion_views.py
 
-        page_size = int(request.query_params.get('page_size', 50))
-        page = int(request.query_params.get('page', 1))
-        start = (page - 1) * page_size
-        end = start + page_size
+# views/prediccion_views.py
 
-        serializer = PrediccionHistoricaSerializer(predicciones[start:end], many=True)
-        return Response({
-            "count": predicciones.count(),
-            "page": page,
-            "page_size": page_size,
-            "results": serializer.data
-        })
+@method_decorator(cache_page(60 * 5), name='dispatch')
+class HistoricoPrediccionesView(APIView):
+    permission_classes = [IsAuthenticated]
 
-    except Exception as e:
-        return Response({"error": str(e)}, status=500)
+    def get(self, request, producto_id):
+        """
+        Devuelve el historial de predicciones para un producto, con opción de filtrar por tipo de cambio.
+        ?origen=Oficial o ?origen=Paralelo
+        """
+        try:
+            origen = request.query_params.get('origen')
+            predicciones = PrediccionHistorica.objects.select_related('producto', 'usuario').filter(
+                producto_id=producto_id
+            ).order_by("-fecha_prediccion")
 
+            if origen in ["Oficial", "Paralelo"]:
+                predicciones = predicciones.filter(tipo_cambio_origen=origen)
+
+            # paginación simple
+            page_size = int(request.query_params.get('page_size', 50))
+            page = int(request.query_params.get('page', 1))
+            start = (page - 1) * page_size
+            end = start + page_size
+
+            serializer = PrediccionHistoricaSerializer(predicciones[start:end], many=True)
+            return Response({
+                "count": predicciones.count(),
+                "page": page,
+                "page_size": page_size,
+                "origen_filtrado": origen,
+                "results": serializer.data
+            })
+
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return Response({"error": str(e)}, status=500)
+
+
+
+# === VIEW para historial de precios ===
 @cache_page(60 * 10)
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -142,4 +163,5 @@ def historial_precios_producto(request, producto_id):
     except Producto.DoesNotExist:
         return Response({"error": "Producto no encontrado."}, status=404)
     except Exception as e:
+        traceback.print_exc()
         return Response({"error": str(e)}, status=500)

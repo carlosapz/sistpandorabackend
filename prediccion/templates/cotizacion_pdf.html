@@ -66,6 +66,14 @@
       background: #e7eff8;
       border-top: 2px solid #205781;
     }
+    .resumen {
+      width: 100%;
+      margin-top: 20px;
+      font-size: 13px;
+    }
+    .resumen td {
+      padding: 6px 10px;
+    }
     footer {
       margin-top: 40px;
       font-size: 10px;
@@ -73,7 +81,6 @@
       color: #888;
       letter-spacing: 1px;
     }
-    /* PDF-specific tweaks */
     @page {
       size: A4;
       margin: 2cm;
@@ -86,8 +93,6 @@
 </head>
 <body>
   <header>
-    {# Si tienes un logo, colócalo aquí #}
-    {# <img src="{{ STATIC_URL }}img/logo.png" alt="Logo" class="logo" /> #}
     <h1>Constructora Pandora</h1>
     <h2>Cotización: {{ cotizacion.nombre|default:"-" }}</h2>
   </header>
@@ -123,12 +128,43 @@
         </tr>
       {% endfor %}
     </tbody>
-    <tfoot>
-      <tr>
-        <td colspan="3" style="text-align:right;">Total General (Bs):</td>
-        <td>{{ cotizacion.total_general|floatformat:2 }}</td>
-      </tr>
-    </tfoot>
+  </table>
+
+  <table class="resumen">
+    {% with subtotal=0 %}
+    {% for p in productos %}
+      {% widthratio p.total 1 1 as pt %}
+      {% widthratio subtotal 1 1 as subtotal %}
+      {% with subtotal=pt|add:subtotal %}
+      {% endwith %}
+    {% endfor %}
+    <tr><td colspan="3" style="text-align:right;"><strong>Subtotal (Bs):</strong></td>
+        <td>{{ cotizacion.total_general|floatformat:2|floatformat:2|floatformat:2 }}</td></tr>
+    {% endwith %}
+
+    {% if cotizacion.gastos_generales %}
+    <tr>
+      <td colspan="3" style="text-align:right;">Gastos Generales ({{ cotizacion.gastos_generales }}%):</td>
+      <td>{{ cotizacion.total_general|floatformat:2|floatformat:2|mul:cotizacion.gastos_generales|div:100|floatformat:2 }}</td>
+    </tr>
+    {% endif %}
+    {% if cotizacion.utilidad %}
+    <tr>
+      <td colspan="3" style="text-align:right;">Utilidad ({{ cotizacion.utilidad }}%):</td>
+      <td>{{ cotizacion.total_general|floatformat:2|mul:cotizacion.utilidad|div:100|floatformat:2 }}</td>
+    </tr>
+    {% endif %}
+    {% if cotizacion.contingencia %}
+    <tr>
+      <td colspan="3" style="text-align:right;">Contingencia ({{ cotizacion.contingencia }}%):</td>
+      <td>{{ cotizacion.total_general|floatformat:2|mul:cotizacion.contingencia|div:100|floatformat:2 }}</td>
+    </tr>
+    {% endif %}
+
+    <tr>
+      <td colspan="3" style="text-align:right;"><strong>Total General (Bs):</strong></td>
+      <td><strong>{{ cotizacion.total_general|floatformat:2 }}</strong></td>
+    </tr>
   </table>
 
   <footer>

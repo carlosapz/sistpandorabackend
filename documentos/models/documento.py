@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-
 from .proyecto import Proyecto
 from .categoria import Categoria
 from .tag import Tag
@@ -9,9 +8,6 @@ from .notificacion import Notificacion
 User = get_user_model()
 
 class Documento(models.Model):
-    """
-    Representa un documento vinculado a un proyecto.
-    """
     TIPO_DOCUMENTO_CHOICES = [
         ('PLANO', 'Plano'),
         ('CONTRATO', 'Contrato'),
@@ -44,8 +40,8 @@ class Documento(models.Model):
     archivo = models.FileField(upload_to='documentos/')
     usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='documentos_creados')
     usuario_modificacion = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='documentos_modificados')
-    proyecto = models.ForeignKey(Proyecto, on_delete=models.SET_NULL, null=True)
-    categoria = models.ForeignKey(Categoria, on_delete=models.SET_NULL, null=True)
+    proyecto = models.ForeignKey(Proyecto, on_delete=models.SET_NULL, null=True, related_name='documentos')
+    categoria = models.ForeignKey(Categoria, on_delete=models.SET_NULL, null=True, related_name='documentos')
     tags = models.ManyToManyField(Tag, blank=True)
     estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='REVISION', db_index=True)
     prioridad = models.CharField(max_length=10, choices=PRIORIDAD_CHOICES, default='MEDIA')
@@ -67,20 +63,12 @@ class Documento(models.Model):
             self.titulo = nuevo_titulo
 
         estado_anterior = None if es_nuevo else Documento.objects.get(pk=self.pk).estado
-
         super().save(*args, **kwargs)
 
         if es_nuevo and self.estado == 'REVISION':
-            Notificacion.objects.create(
-                usuario=self.usuario,
-                mensaje=f"El documento '{self.titulo}' ha sido creado y está en revisión."
-            )
-        elif not es_nuevo:
-            if estado_anterior != self.estado:
-                Notificacion.objects.create(
-                    usuario=self.usuario,
-                    mensaje=f"El documento '{self.titulo}' ha sido {self.estado.lower()}."
-                )
+            Notificacion.objects.create(usuario=self.usuario, mensaje=f"El documento '{self.titulo}' ha sido creado y está en revisión.")
+        elif not es_nuevo and estado_anterior != self.estado:
+            Notificacion.objects.create(usuario=self.usuario, mensaje=f"El documento '{self.titulo}' ha sido {self.estado.lower()}.")
 
     def __str__(self):
         return f"{self.titulo} ({self.estado})"

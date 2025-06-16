@@ -46,6 +46,7 @@ from documentos.views.export_views import (
 from documentos.views.obra_views import (
     ObraListCreateView,
     ObraDetailView,
+    descargar_resumen_obra_pdf,
 )
 
 from documentos.views.relaciones_views import (
@@ -101,4 +102,5 @@ urlpatterns = [
     # Obras
     path('obras/', ObraListCreateView.as_view(), name='obra-list-create'),
     path('obras/<int:pk>/', ObraDetailView.as_view(), name='obra-detail'),
+    path("obras/<int:obra_id>/resumen-pdf/", descargar_resumen_obra_pdf, name="descargar-resumen-obra"),
 ]
