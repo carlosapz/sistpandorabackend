@@ -33,3 +33,4 @@ graphviz==0.20.3
 
 # Gunicorn para prod server
 gunicorn==21.2.0
+celery
